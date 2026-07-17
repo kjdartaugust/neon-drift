@@ -1,0 +1,14 @@
+{
+  "name": "NEON DRIFT",
+  "short_name": "NEON DRIFT",
+  "description": "A neon arcade space shooter — survive the swarm, beat the boss.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#05060f",
+  "theme_color": "#05060f",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
