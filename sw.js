@@ -1,4 +1,4 @@
-const CACHE = 'neon-drift-v2';
+const CACHE = 'neon-drift-v3';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', e => {
@@ -13,15 +13,32 @@ self.addEventListener('activate', e => {
   );
 });
 
+// Network-first for the page + scripts so a fresh deploy always wins when online;
+// cache-first for other static assets; cache as a fallback when offline.
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
-  e.respondWith(
-    caches.match(e.request).then(cached =>
-      cached || fetch(e.request).then(res => {
+  const url = new URL(e.request.url);
+  const isShell = e.request.mode === 'navigate'
+    || url.pathname.endsWith('/')
+    || /\.(html|js)$/.test(url.pathname);
+
+  if (isShell) {
+    e.respondWith(
+      fetch(e.request).then(res => {
         const copy = res.clone();
         caches.open(CACHE).then(c => c.put(e.request, copy));
         return res;
-      }).catch(() => caches.match('./index.html'))
-    )
-  );
+      }).catch(() => caches.match(e.request).then(r => r || caches.match('./index.html')))
+    );
+  } else {
+    e.respondWith(
+      caches.match(e.request).then(cached =>
+        cached || fetch(e.request).then(res => {
+          const copy = res.clone();
+          caches.open(CACHE).then(c => c.put(e.request, copy));
+          return res;
+        }).catch(() => cached)
+      )
+    );
+  }
 });
